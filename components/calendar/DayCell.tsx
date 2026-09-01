@@ -47,7 +47,7 @@ export function DayCell({
             e.stopPropagation();
             onCellMouseDown(date, e.clientX, e.clientY, true);
           }}
-          className="flex w-full text-[11px] font-semibold text-white"
+          className="-mx-px flex w-[calc(100%+2px)] text-[11px] font-semibold text-white"
         >
           {isSplit ? (
             <>
