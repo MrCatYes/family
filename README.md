@@ -44,6 +44,15 @@ Une fois testé en local, déployez gratuitement sur [Vercel](https://vercel.com
 2. Importez le dépôt dans Vercel, ajoutez les deux variables d'environnement (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) dans les réglages du projet Vercel.
 3. Déployez — l'app sera accessible depuis un lien `https://...vercel.app` sur tous vos appareils.
 
+### Installer l'app sur l'écran d'accueil (PWA)
+
+Une fois le site déployé, chaque parent peut l'installer comme une vraie app sur son téléphone :
+
+- **iPhone (Safari)** : ouvrir le lien → bouton Partager → **Sur l'écran d'accueil**.
+- **Android (Chrome)** : ouvrir le lien → menu ⋮ → **Ajouter à l'écran d'accueil** (ou bannière d'installation automatique).
+
+L'app s'ouvre alors en plein écran avec sa propre icône, sans barre d'adresse.
+
 ## Stack technique
 
 Next.js (App Router) + TypeScript + Tailwind CSS + Supabase (Postgres, Auth, Storage).
