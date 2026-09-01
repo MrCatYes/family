@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import type { EventCategory, Profile } from "@/types/database";
 
@@ -14,8 +18,10 @@ export function CalendarSidebar({
   activeCategories: Set<EventCategory>;
   onToggleCategory: (cat: EventCategory) => void;
 }) {
-  return (
-    <aside className="w-56 shrink-0 space-y-6 border-r border-white/5 p-4">
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const content = (
+    <>
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Garde</p>
         <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -59,6 +65,27 @@ export function CalendarSidebar({
           ))}
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile: collapsible filters bar above the calendar */}
+      <div className="border-b border-white/5 md:hidden">
+        <button
+          onClick={() => setMobileOpen((v) => !v)}
+          className="flex w-full items-center justify-between px-4 py-3 text-sm text-slate-300"
+        >
+          <span className="flex items-center gap-2">
+            <SlidersHorizontal size={14} /> Filtres
+          </span>
+          <ChevronDown size={16} className={`transition-transform ${mobileOpen ? "rotate-180" : ""}`} />
+        </button>
+        {mobileOpen && <div className="space-y-6 px-4 pb-4">{content}</div>}
+      </div>
+
+      {/* Desktop: permanent sidebar */}
+      <aside className="hidden w-56 shrink-0 space-y-6 border-r border-white/5 p-4 md:block">{content}</aside>
+    </>
   );
 }

@@ -210,7 +210,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col md:flex-row">
       <CalendarSidebar
         profiles={profiles}
         showCustody={showCustody}
@@ -219,23 +219,25 @@ export default function CalendarPage() {
         onToggleCategory={toggleCategory}
       />
 
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setMonthDate((d) => subMonths(d, 1))}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
             >
               <ChevronLeft size={18} />
             </button>
-            <h1 className="w-44 text-lg font-semibold text-white">{formatMonthTitle(monthDate)}</h1>
+            <h1 className="w-28 text-base font-semibold text-white sm:w-44 sm:text-lg">
+              {formatMonthTitle(monthDate)}
+            </h1>
             <button
               onClick={() => setMonthDate((d) => addMonths(d, 1))}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
             >
               <ChevronRight size={18} />
             </button>
-            <Button variant="secondary" onClick={() => setMonthDate(new Date())} className="ml-2 text-xs">
+            <Button variant="secondary" onClick={() => setMonthDate(new Date())} className="ml-1 text-xs sm:ml-2">
               Aujourd&apos;hui
             </Button>
           </div>
@@ -243,7 +245,7 @@ export default function CalendarPage() {
             <Plus size={16} /> Créer
           </Button>
         </div>
-        <p className="mb-2 text-xs text-slate-500">
+        <p className="mb-2 hidden text-xs text-slate-500 sm:block">
           Astuce : clique sur la bande de garde en haut d&apos;un jour pour changer le parent, ou clique-glisse
           sur plusieurs jours pour créer un événement qui s&apos;étend sur toute la période.
         </p>
