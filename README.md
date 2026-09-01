@@ -7,8 +7,7 @@ Calendrier partagé, garde de votre fille, événements spéciaux, documents, no
 L'app a besoin d'un projet Supabase gratuit pour fonctionner (comptes, base de données, stockage des documents).
 
 1. Créer un compte et un projet sur [supabase.com](https://supabase.com) (gratuit).
-2. Dans le projet Supabase, ouvrir **SQL Editor** → coller le contenu de [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) → exécuter. Cela crée toutes les tables, les règles de sécurité (RLS) et le bucket de stockage `family-documents`.
-   Puis faire de même avec [`supabase/migrations/0002_child_and_family.sql`](supabase/migrations/0002_child_and_family.sql) (fiche enfant, dépenses, tâches, suivi mensuel).
+2. Dans le projet Supabase, ouvrir **SQL Editor** → exécuter dans l'ordre les scripts du dossier [`supabase/migrations/`](supabase/migrations) (0001, puis 0002, 0003, 0004…). Ils créent les tables, les règles de sécurité (RLS), le bucket de stockage `family-documents`, la fiche enfant, les dépenses, le suivi mensuel, et les motifs de garde flexibles.
 3. Dans **Project Settings → API**, copier :
    - `Project URL`
    - `anon public` key
@@ -22,12 +21,14 @@ L'app a besoin d'un projet Supabase gratuit pour fonctionner (comptes, base de d
    npm run dev
    ```
 6. Ouvrir [http://localhost:3000](http://localhost:3000) → créer un compte (ex. "Maman"), puis un deuxième compte (ex. "Papa") depuis un autre navigateur/onglet privé.
-7. Aller dans **Garde** pour configurer le motif d'alternance (qui commence, tous les combien de jours).
+7. Chaque parent va dans **Mon profil** (en haut de la barre latérale) choisir sa couleur.
+8. Aller dans **Garde** pour configurer le motif : alternance simple (semaine/semaine, etc.) ou motif hebdomadaire (2-2-3, 2-2-5-5, ou personnalisé jour par jour sur 1 à 4 semaines).
 
 ## Fonctionnalités
 
 - **Calendrier** — événements + bandes de garde colorées par jour, jours fériés canadiens importables en un clic (page Tableau de bord)
-- **Garde** — motif d'alternance récurrent + exceptions ponctuelles (ex. un souper, un échange de jour)
+- **Garde** — alternance simple (X jours) ou motif hebdomadaire multi-semaines (2-2-3, 2-2-5-5, ou entièrement personnalisé jour par jour), + exceptions ponctuelles (ex. un souper, un échange de jour)
+- **Mon profil** — chaque parent choisit son prénom affiché et sa couleur (bandes de garde, événements)
 - **Fiche enfant** — infos essentielles, santé, école et activités, vêtements/effets, transferts, communication, et répartition des tâches ("qui s'occupe de quoi") entre les deux parents
 - **Dépenses partagées** — suivi des dépenses, qui a payé, remboursement, solde calculé automatiquement selon un pourcentage de partage configurable
 - **Suivi mensuel** — checklist "à ne pas oublier" par catégorie (école, santé, vêtements, social, activités, administratif), avec notes libres, remise à zéro chaque mois

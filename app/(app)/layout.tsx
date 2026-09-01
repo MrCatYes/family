@@ -56,12 +56,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-1">
       <aside className="flex w-60 shrink-0 flex-col border-r border-white/10 bg-[#0f1019] p-4">
-        <div className="mb-6 px-2">
+        <Link href="/profil" className="mb-6 block rounded-lg px-2 py-1 hover:bg-white/5">
           <p className="text-sm font-semibold text-white">Famille</p>
-          <p className="text-xs text-slate-500">
+          <span className="flex items-center gap-1.5 text-xs text-slate-500">
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: profile?.color }} />
             {profile?.display_name ?? "…"}
-          </p>
-        </div>
+          </span>
+        </Link>
         <nav className="flex flex-1 flex-col gap-1">
           {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + "/");

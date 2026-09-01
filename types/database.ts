@@ -28,12 +28,23 @@ export type FamilyEvent = {
   created_at: string;
 };
 
+export type CustodyPatternType = "alternating" | "weekly_template";
+
+export type CustodyDayParent = "a" | "b";
+
+/** weeks[weekIndex][dayOfWeek] where dayOfWeek is 0=Sun..6=Sat */
+export type WeeklyTemplate = {
+  weeks: CustodyDayParent[][];
+};
+
 export type CustodyPattern = {
   id: string;
   start_date: string;
   parent_a_id: string;
   parent_b_id: string;
   cycle_days: number;
+  pattern_type: CustodyPatternType;
+  weekly_template: WeeklyTemplate | null;
   updated_at: string;
 };
 
