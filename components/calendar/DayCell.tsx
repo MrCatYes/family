@@ -2,6 +2,12 @@ import { isSameDay, isInMonth } from "@/lib/dates";
 import type { FamilyEvent, Profile } from "@/types/database";
 import { EventPill } from "./EventPill";
 
+// A regular space in a text-only span gets whitespace-collapsed away, which lets the
+// span's line box shrink and makes the custody band a different height on days where
+// the parent name is hidden (because it's the same as the previous day). A non-breaking
+// space keeps real content in the span so its height always matches the labeled bands.
+const NBSP = " ";
+
 export function DayCell({
   date,
   monthDate,
@@ -52,10 +58,10 @@ export function DayCell({
           {isSplit ? (
             <>
               <span className="flex-1 truncate px-1.5 py-1 text-left" style={{ backgroundColor: custodyAm!.color }}>
-                {showCustodyLabel ? custodyAm!.display_name.slice(0, 1) : " "}
+                {showCustodyLabel ? custodyAm!.display_name.slice(0, 1) : NBSP}
               </span>
               <span className="flex-1 truncate px-1.5 py-1 text-right" style={{ backgroundColor: custodyPm!.color }}>
-                {showCustodyLabel ? custodyPm!.display_name.slice(0, 1) : " "}
+                {showCustodyLabel ? custodyPm!.display_name.slice(0, 1) : NBSP}
               </span>
             </>
           ) : (
@@ -63,7 +69,7 @@ export function DayCell({
               className="flex-1 truncate px-2 py-1 text-left"
               style={{ backgroundColor: (custodyAm ?? custodyPm)!.color }}
             >
-              {showCustodyLabel ? (custodyAm ?? custodyPm)!.display_name : " "}
+              {showCustodyLabel ? (custodyAm ?? custodyPm)!.display_name : NBSP}
             </span>
           )}
         </div>
