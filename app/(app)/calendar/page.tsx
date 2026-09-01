@@ -9,7 +9,7 @@ import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { EventFormModal } from "@/components/calendar/EventFormModal";
 import { DayDetailModal } from "@/components/calendar/DayDetailModal";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { formatMonthTitle, toISODate } from "@/lib/dates";
+import { formatMonthTitle, isSameDay, toISODate } from "@/lib/dates";
 import { getCustodyForDay } from "@/lib/custody";
 import {
   createEvent,
@@ -38,9 +38,14 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
 
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [newEventEndDate, setNewEventEndDate] = useState<Date | null>(null);
   const [dayModalOpen, setDayModalOpen] = useState(false);
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<FamilyEvent | null>(null);
+
+  const [dragAnchor, setDragAnchor] = useState<Date | null>(null);
+  const [dragHover, setDragHover] = useState<Date | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const gridStart = startOfWeek(startOfMonth(monthDate), { weekStartsOn: 0 });
   const gridEnd = endOfWeek(endOfMonth(monthDate), { weekStartsOn: 0 });
@@ -88,9 +93,11 @@ export default function CalendarPage() {
     setDayModalOpen(true);
   }
 
-  function openNewEvent(defaultDate?: Date) {
+  function openNewEvent(defaultDate?: Date, endDate?: Date) {
     setEditingEvent(null);
-    setSelectedDay(defaultDate ?? selectedDay ?? new Date());
+    const start = defaultDate ?? selectedDay ?? new Date();
+    setSelectedDay(start);
+    setNewEventEndDate(endDate ?? start);
     setEventModalOpen(true);
   }
 
@@ -98,6 +105,45 @@ export default function CalendarPage() {
     setEditingEvent(event);
     setEventModalOpen(true);
   }
+
+  function handleCellMouseDown(date: Date) {
+    setDragAnchor(date);
+    setDragHover(date);
+    setIsDragging(true);
+  }
+
+  function handleCellMouseEnter(date: Date) {
+    if (isDragging) setDragHover(date);
+  }
+
+  useEffect(() => {
+    if (!isDragging) return;
+    function handleMouseUp() {
+      const anchor = dragAnchor;
+      const hover = dragHover ?? anchor;
+      setIsDragging(false);
+      setDragAnchor(null);
+      setDragHover(null);
+      if (!anchor || !hover) return;
+      if (isSameDay(anchor, hover)) {
+        openDay(anchor);
+      } else {
+        const start = anchor < hover ? anchor : hover;
+        const end = anchor < hover ? hover : anchor;
+        openNewEvent(start, end);
+      }
+    }
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => window.removeEventListener("mouseup", handleMouseUp);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging, dragAnchor, dragHover]);
+
+  const dragRange = useMemo(() => {
+    if (!isDragging || !dragAnchor || !dragHover) return null;
+    const start = dragAnchor < dragHover ? dragAnchor : dragHover;
+    const end = dragAnchor < dragHover ? dragHover : dragAnchor;
+    return { start: toISODate(start), end: toISODate(end) };
+  }, [isDragging, dragAnchor, dragHover]);
 
   const selectedDayEvents = selectedDay
     ? filteredEvents.filter((e) => {
@@ -156,6 +202,9 @@ export default function CalendarPage() {
             <Plus size={16} /> Créer
           </Button>
         </div>
+        <p className="mb-2 text-xs text-slate-500">
+          Astuce : clique-glisse sur plusieurs jours pour créer un événement qui s&apos;étend sur toute la période.
+        </p>
 
         {loading ? (
           <p className="text-sm text-slate-500">Chargement…</p>
@@ -167,8 +216,11 @@ export default function CalendarPage() {
             custodyPattern={custodyPattern}
             custodyOverrides={custodyOverrides}
             showCustody={showCustody}
+            dragRange={dragRange}
             onSelectDay={openDay}
             onSelectEvent={openEditEvent}
+            onCellMouseDown={handleCellMouseDown}
+            onCellMouseEnter={handleCellMouseEnter}
           />
         )}
       </div>
@@ -216,6 +268,7 @@ export default function CalendarPage() {
         open={eventModalOpen}
         onClose={() => setEventModalOpen(false)}
         defaultDate={selectedDay ?? new Date()}
+        defaultEndDate={newEventEndDate ?? selectedDay ?? new Date()}
         event={editingEvent}
         profiles={profiles}
         currentProfileId={profile.id}

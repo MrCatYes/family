@@ -12,6 +12,7 @@ export function EventPill({
   return (
     <button
       onClick={onClick}
+      onMouseDown={(e) => e.stopPropagation()}
       title={event.title}
       className="block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight hover:opacity-80"
       style={{ backgroundColor: color, color: "#fff" }}

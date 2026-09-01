@@ -10,8 +10,11 @@ export function MonthGrid({
   custodyPattern,
   custodyOverrides,
   showCustody,
+  dragRange,
   onSelectDay,
   onSelectEvent,
+  onCellMouseDown,
+  onCellMouseEnter,
 }: {
   monthDate: Date;
   events: FamilyEvent[];
@@ -19,8 +22,12 @@ export function MonthGrid({
   custodyPattern: CustodyPattern | null;
   custodyOverrides: CustodyOverride[];
   showCustody: boolean;
+  /** Normalized (start <= end) ISO date range currently being drag-selected, if any. */
+  dragRange: { start: string; end: string } | null;
   onSelectDay: (date: Date) => void;
   onSelectEvent: (event: FamilyEvent) => void;
+  onCellMouseDown: (date: Date) => void;
+  onCellMouseEnter: (date: Date) => void;
 }) {
   const days = getMonthGrid(monthDate);
   const profileMap = new Map(profiles.map((p) => [p.id, p]));
@@ -49,6 +56,7 @@ export function MonthGrid({
           const custody = custodyByDay[idx];
           const prev = idx > 0 ? custodyByDay[idx - 1] : null;
           const sameAsPrev = prev !== null && custody.am === prev.am && custody.pm === prev.pm;
+          const isInDragRange = dragRange !== null && dayISO >= dragRange.start && dayISO <= dragRange.end;
           return (
             <DayCell
               key={dayISO}
@@ -58,8 +66,11 @@ export function MonthGrid({
               custodyPm={custody.pm ? profileMap.get(custody.pm) ?? null : null}
               showCustodyLabel={!sameAsPrev}
               events={dayEvents}
+              isInDragRange={isInDragRange}
               onSelectDay={onSelectDay}
               onSelectEvent={onSelectEvent}
+              onCellMouseDown={onCellMouseDown}
+              onCellMouseEnter={onCellMouseEnter}
             />
           );
         })}

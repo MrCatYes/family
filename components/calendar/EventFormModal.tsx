@@ -12,6 +12,7 @@ export function EventFormModal({
   open,
   onClose,
   defaultDate,
+  defaultEndDate,
   event,
   profiles,
   currentProfileId,
@@ -21,6 +22,8 @@ export function EventFormModal({
   open: boolean;
   onClose: () => void;
   defaultDate?: Date;
+  /** End of the initial range for a new event (e.g. from a drag-select). Defaults to defaultDate. */
+  defaultEndDate?: Date;
   event?: FamilyEvent | null;
   profiles: Profile[];
   currentProfileId: string;
@@ -46,15 +49,16 @@ export function EventFormModal({
       setEndDate(event.end_at.slice(0, 10));
       setColorOverride(event.color ?? "");
     } else {
-      const iso = toISODate(defaultDate ?? new Date());
+      const start = defaultDate ?? new Date();
+      const end = defaultEndDate ?? start;
       setTitle("");
       setDescription("");
       setCategory("general");
-      setStartDate(iso);
-      setEndDate(iso);
+      setStartDate(toISODate(start));
+      setEndDate(toISODate(end));
       setColorOverride("");
     }
-  }, [open, event, defaultDate]);
+  }, [open, event, defaultDate, defaultEndDate]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   async function handleSubmit(e: React.FormEvent) {

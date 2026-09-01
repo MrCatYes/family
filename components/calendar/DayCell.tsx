@@ -9,8 +9,11 @@ export function DayCell({
   custodyPm,
   showCustodyLabel,
   events,
+  isInDragRange,
   onSelectDay,
   onSelectEvent,
+  onCellMouseDown,
+  onCellMouseEnter,
 }: {
   date: Date;
   monthDate: Date;
@@ -18,8 +21,11 @@ export function DayCell({
   custodyPm: Profile | null;
   showCustodyLabel: boolean;
   events: FamilyEvent[];
+  isInDragRange: boolean;
   onSelectDay: (date: Date) => void;
   onSelectEvent: (event: FamilyEvent) => void;
+  onCellMouseDown: (date: Date) => void;
+  onCellMouseEnter: (date: Date) => void;
 }) {
   const inMonth = isInMonth(date, monthDate);
   const today = isSameDay(date, new Date());
@@ -27,9 +33,11 @@ export function DayCell({
 
   return (
     <div
-      className={`flex min-h-28 flex-col border-b border-r border-white/5 ${
+      onMouseDown={() => onCellMouseDown(date)}
+      onMouseEnter={() => onCellMouseEnter(date)}
+      className={`flex min-h-28 select-none flex-col border-b border-r border-white/5 ${
         inMonth ? "bg-transparent" : "bg-black/20"
-      }`}
+      } ${isInDragRange ? "bg-indigo-500/20 ring-1 ring-inset ring-indigo-400" : ""}`}
     >
       {isSplit ? (
         <div className="flex text-[11px] font-semibold text-white">
@@ -70,6 +78,7 @@ export function DayCell({
         ))}
         {events.length > 3 && (
           <button
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={() => onSelectDay(date)}
             className="px-1 text-left text-[11px] text-slate-500 hover:text-slate-300"
           >
