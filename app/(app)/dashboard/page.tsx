@@ -6,6 +6,7 @@ import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarDays, FolderOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { EventFormModal } from "@/components/calendar/EventFormModal";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { formatEventDate, toISODate } from "@/lib/dates";
 import { getCustodyForDay } from "@/lib/custody";
@@ -13,11 +14,13 @@ import { getCanadianHolidays } from "@/lib/holidays";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import {
   createEvent,
+  deleteEvent,
   fetchCustodyOverrides,
   fetchCustodyPattern,
   fetchDocuments,
   fetchEventsInRange,
   fetchProfiles,
+  updateEvent,
 } from "@/lib/data";
 import type { CustodyOverride, CustodyPattern, FamilyDocument, FamilyEvent, Profile } from "@/types/database";
 
@@ -30,6 +33,8 @@ export default function DashboardPage() {
   const [documents, setDocuments] = useState<FamilyDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<FamilyEvent | null>(null);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
 
   const today = new Date();
   const tomorrow = addDays(today, 1);
@@ -127,17 +132,25 @@ export default function DashboardPage() {
         {upcoming.length === 0 ? (
           <p className="text-sm text-slate-500">Rien de prévu dans les 14 prochains jours.</p>
         ) : (
-          <ul className="space-y-1.5">
+          <ul className="space-y-1">
             {upcoming.map((e) => (
-              <li key={e.id} className="flex items-center gap-2 text-sm">
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: e.color || EVENT_CATEGORIES[e.category].color }}
-                />
-                <span className="text-slate-500">
-                  {formatEventDate(e.start_at, "d MMM")}
-                </span>
-                <span className="text-slate-200">{e.title}</span>
+              <li key={e.id}>
+                <button
+                  onClick={() => {
+                    setEditingEvent(e);
+                    setEventModalOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left text-sm hover:bg-white/5"
+                >
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: e.color || EVENT_CATEGORIES[e.category].color }}
+                  />
+                  <span className="text-slate-500">
+                    {formatEventDate(e.start_at, "d MMM")}
+                  </span>
+                  <span className="text-slate-200">{e.title}</span>
+                </button>
               </li>
             ))}
           </ul>
@@ -175,6 +188,29 @@ export default function DashboardPage() {
           {importing ? "Import…" : "Importer les jours fériés"}
         </Button>
       </div>
+
+      {profile && (
+        <EventFormModal
+          open={eventModalOpen}
+          onClose={() => setEventModalOpen(false)}
+          event={editingEvent}
+          profiles={profiles}
+          currentProfileId={profile.id}
+          onSave={async (data) => {
+            if (editingEvent) await updateEvent(editingEvent.id, data);
+            await load();
+          }}
+          onDelete={
+            editingEvent
+              ? async () => {
+                  await deleteEvent(editingEvent.id);
+                  setEventModalOpen(false);
+                  await load();
+                }
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

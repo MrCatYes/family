@@ -98,27 +98,29 @@ export function DayDetailModal({
             </p>
           )}
           {!transferMode && (
-            <div className="flex flex-wrap items-center gap-2">
-              {profiles.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={async () => {
-                    setSavingOverride(true);
-                    try {
-                      await onSetOverride(p.id, p.id, overrideNote);
-                    } finally {
-                      setSavingOverride(false);
-                    }
-                  }}
-                  disabled={savingOverride}
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    !isSplit && custodyAmId === p.id ? "text-white" : "text-slate-300 opacity-60"
-                  }`}
-                  style={{ backgroundColor: p.color }}
-                >
-                  {p.display_name} (journée complète)
-                </button>
-              ))}
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                {profiles.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={async () => {
+                      setSavingOverride(true);
+                      try {
+                        await onSetOverride(p.id, p.id, overrideNote);
+                      } finally {
+                        setSavingOverride(false);
+                      }
+                    }}
+                    disabled={savingOverride}
+                    className={`flex-1 rounded-full px-3 py-1.5 text-xs font-medium ${
+                      !isSplit && custodyAmId === p.id ? "text-white" : "text-slate-300 opacity-60"
+                    }`}
+                    style={{ backgroundColor: p.color }}
+                  >
+                    {p.display_name} (journée complète)
+                  </button>
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={() => {
@@ -126,7 +128,7 @@ export function DayDetailModal({
                   setTransferPm(custodyPmId ?? profiles[1]?.id ?? profiles[0]?.id ?? "");
                   setTransferMode(true);
                 }}
-                className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-300 hover:bg-white/10"
+                className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/10"
               >
                 + Transfert en demi-journée
               </button>
