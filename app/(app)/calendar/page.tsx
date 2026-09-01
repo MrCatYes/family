@@ -10,7 +10,7 @@ import { EventFormModal } from "@/components/calendar/EventFormModal";
 import { DayDetailModal } from "@/components/calendar/DayDetailModal";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { formatMonthTitle, toISODate } from "@/lib/dates";
-import { getCustodyParentId } from "@/lib/custody";
+import { getCustodyForDay } from "@/lib/custody";
 import {
   createEvent,
   deleteCustodyOverride,
@@ -110,9 +110,9 @@ export default function CalendarPage() {
     ? custodyOverrides.find((o) => o.date === toISODate(selectedDay)) ?? null
     : null;
 
-  const selectedDayCustodyId = selectedDay
-    ? getCustodyParentId(selectedDay, custodyPattern, custodyOverrides)
-    : null;
+  const selectedDayCustody = selectedDay
+    ? getCustodyForDay(selectedDay, custodyPattern, custodyOverrides)
+    : { am: null, pm: null };
 
   if (!profile) {
     return (
@@ -179,7 +179,8 @@ export default function CalendarPage() {
         date={selectedDay}
         events={selectedDayEvents}
         profiles={profiles}
-        custodyParentId={selectedDayCustodyId}
+        custodyAmId={selectedDayCustody.am}
+        custodyPmId={selectedDayCustody.pm}
         override={selectedDayOverride}
         onAddEvent={() => {
           setDayModalOpen(false);
@@ -193,11 +194,12 @@ export default function CalendarPage() {
           await deleteEvent(id);
           await load();
         }}
-        onSetOverride={async (parentId, note) => {
+        onSetOverride={async (amParentId, pmParentId, note) => {
           if (!selectedDay) return;
           await upsertCustodyOverride({
             date: toISODate(selectedDay),
-            parent_id: parentId,
+            parent_id: amParentId,
+            pm_parent_id: pmParentId === amParentId ? null : pmParentId,
             note: note || null,
             created_by: profile.id,
           });

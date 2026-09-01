@@ -26,7 +26,7 @@ export function getCustodyForDay(
 ): CustodyDayResult {
   const iso = toISODate(date);
   const override = overrides.find((o) => o.date === iso);
-  if (override) return { am: override.parent_id, pm: override.parent_id };
+  if (override) return { am: override.parent_id, pm: override.pm_parent_id ?? override.parent_id };
 
   if (!pattern) return { am: null, pm: null };
 

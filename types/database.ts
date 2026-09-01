@@ -56,7 +56,10 @@ export type CustodyPattern = {
 export type CustodyOverride = {
   id: string;
   date: string;
+  /** Morning parent (or the whole-day parent, when pm_parent_id is null/same). */
   parent_id: string;
+  /** Set only for a half-day transfer exception; the afternoon/evening parent. */
+  pm_parent_id: string | null;
   note: string | null;
   created_by: string | null;
   created_at: string;

@@ -338,6 +338,8 @@ export default function CustodyPage() {
         <ul className="space-y-1.5">
           {overrides.map((o) => {
             const parent = profileMap.get(o.parent_id);
+            const pmParent = o.pm_parent_id ? profileMap.get(o.pm_parent_id) : null;
+            const isSplitOverride = pmParent && pmParent.id !== parent?.id;
             return (
               <li
                 key={o.id}
@@ -350,7 +352,9 @@ export default function CustodyPage() {
                   />
                   <span className="text-slate-300">
                     {format(new Date(`${o.date}T00:00:00`), "d MMMM yyyy", { locale: fr })} —{" "}
-                    {parent?.display_name ?? "?"}
+                    {isSplitOverride
+                      ? `${parent?.display_name ?? "?"} (matin) / ${pmParent?.display_name ?? "?"} (soir)`
+                      : (parent?.display_name ?? "?")}
                   </span>
                   {o.note && <span className="text-slate-500">({o.note})</span>}
                 </div>
