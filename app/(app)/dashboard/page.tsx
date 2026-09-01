@@ -8,7 +8,7 @@ import { CalendarDays, FolderOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { formatEventDate, toISODate } from "@/lib/dates";
-import { getCustodyParentId } from "@/lib/custody";
+import { getCustodyForDay } from "@/lib/custody";
 import { getCanadianHolidays } from "@/lib/holidays";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import {
@@ -61,8 +61,8 @@ export default function DashboardPage() {
   }, []);
 
   const profileMap = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
-  const todayParentId = getCustodyParentId(today, pattern, overrides);
-  const tomorrowParentId = getCustodyParentId(tomorrow, pattern, overrides);
+  const todayCustody = getCustodyForDay(today, pattern, overrides);
+  const tomorrowCustody = getCustodyForDay(tomorrow, pattern, overrides);
 
   async function handleImportHolidays() {
     if (!profile) return;
@@ -101,11 +101,17 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <p className="mb-1 text-xs uppercase tracking-wide text-slate-500">Garde aujourd&apos;hui</p>
-          <CustodyBadge parent={todayParentId ? profileMap.get(todayParentId) : undefined} />
+          <CustodyBadge
+            am={todayCustody.am ? profileMap.get(todayCustody.am) : undefined}
+            pm={todayCustody.pm ? profileMap.get(todayCustody.pm) : undefined}
+          />
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <p className="mb-1 text-xs uppercase tracking-wide text-slate-500">Garde demain</p>
-          <CustodyBadge parent={tomorrowParentId ? profileMap.get(tomorrowParentId) : undefined} />
+          <CustodyBadge
+            am={tomorrowCustody.am ? profileMap.get(tomorrowCustody.am) : undefined}
+            pm={tomorrowCustody.pm ? profileMap.get(tomorrowCustody.pm) : undefined}
+          />
         </div>
       </div>
 
@@ -173,12 +179,29 @@ export default function DashboardPage() {
   );
 }
 
-function CustodyBadge({ parent }: { parent: Profile | undefined }) {
-  if (!parent) return <p className="text-sm text-slate-500">Non configuré</p>;
+function CustodyBadge({ am, pm }: { am: Profile | undefined; pm: Profile | undefined }) {
+  if (!am && !pm) return <p className="text-sm text-slate-500">Non configuré</p>;
+  if (am && pm && am.id !== pm.id) {
+    return (
+      <div className="flex items-center gap-3 text-sm">
+        <span className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: am.color }} />
+          <span className="font-semibold text-white">{am.display_name}</span>
+          <span className="text-slate-500">(matin)</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: pm.color }} />
+          <span className="font-semibold text-white">{pm.display_name}</span>
+          <span className="text-slate-500">(soir)</span>
+        </span>
+      </div>
+    );
+  }
+  const parent = am ?? pm;
   return (
     <div className="flex items-center gap-2">
-      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: parent.color }} />
-      <span className="text-lg font-semibold text-white">{parent.display_name}</span>
+      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: parent!.color }} />
+      <span className="text-lg font-semibold text-white">{parent!.display_name}</span>
     </div>
   );
 }

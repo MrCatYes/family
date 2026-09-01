@@ -30,7 +30,12 @@ export type FamilyEvent = {
 
 export type CustodyPatternType = "alternating" | "weekly_template";
 
-export type CustodyDayParent = "a" | "b";
+/**
+ * "a" / "b" — the whole day with one parent.
+ * "a-b" — transfer day: parent A has the morning, parent B the afternoon/evening.
+ * "b-a" — transfer day: parent B has the morning, parent A the afternoon/evening.
+ */
+export type CustodyDayParent = "a" | "b" | "a-b" | "b-a";
 
 /** weeks[weekIndex][dayOfWeek] where dayOfWeek is 0=Sun..6=Sat */
 export type WeeklyTemplate = {

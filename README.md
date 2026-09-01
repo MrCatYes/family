@@ -27,7 +27,7 @@ L'app a besoin d'un projet Supabase gratuit pour fonctionner (comptes, base de d
 ## Fonctionnalités
 
 - **Calendrier** — événements + bandes de garde colorées par jour, jours fériés canadiens importables en un clic (page Tableau de bord)
-- **Garde** — alternance simple (X jours) ou motif hebdomadaire multi-semaines (2-2-3, 2-2-5-5, ou entièrement personnalisé jour par jour), + exceptions ponctuelles (ex. un souper, un échange de jour)
+- **Garde** — alternance simple (X jours) ou motif hebdomadaire multi-semaines (2-2-3, 2-2-5-5, ou entièrement personnalisé jour par jour) avec journées de transfert en demi-journée (ex. Maman le matin / Papa le soir), + exceptions ponctuelles (ex. un souper, un échange de jour)
 - **Mon profil** — chaque parent choisit son prénom affiché et sa couleur (bandes de garde, événements)
 - **Fiche enfant** — infos essentielles, santé, école et activités, vêtements/effets, transferts, communication, et répartition des tâches ("qui s'occupe de quoi") entre les deux parents
 - **Dépenses partagées** — suivi des dépenses, qui a payé, remboursement, solde calculé automatiquement selon un pourcentage de partage configurable

@@ -107,10 +107,27 @@ export default function CustodyPage() {
     });
   }
 
+  const DAY_CYCLE: CustodyDayParent[] = ["a", "b", "a-b", "b-a"];
+
+  function dayAmPm(day: CustodyDayParent): { amIsA: boolean; pmIsA: boolean } {
+    switch (day) {
+      case "a":
+        return { amIsA: true, pmIsA: true };
+      case "b":
+        return { amIsA: false, pmIsA: false };
+      case "a-b":
+        return { amIsA: true, pmIsA: false };
+      case "b-a":
+        return { amIsA: false, pmIsA: true };
+    }
+  }
+
   function toggleDay(weekIndex: number, dayIndex: number) {
     setWeeklyTemplate((prev) => {
       const weeks = prev.weeks.map((w) => [...w]);
-      weeks[weekIndex][dayIndex] = weeks[weekIndex][dayIndex] === "a" ? "b" : "a";
+      const current = weeks[weekIndex][dayIndex];
+      const next = DAY_CYCLE[(DAY_CYCLE.indexOf(current) + 1) % DAY_CYCLE.length];
+      weeks[weekIndex][dayIndex] = next;
       return { weeks };
     });
   }
@@ -247,8 +264,8 @@ export default function CustodyPage() {
 
             <div>
               <Label>
-                Clique sur un jour pour basculer entre {parentA?.display_name ?? "Parent A"} et{" "}
-                {parentB?.display_name ?? "Parent B"}
+                Clique sur un jour pour faire défiler {parentA?.display_name ?? "Parent A"} → {parentB?.display_name ?? "Parent B"} → journée de
+                transfert ({parentA?.display_name?.slice(0, 1) ?? "A"} matin / {parentB?.display_name?.slice(0, 1) ?? "B"} soir) → l&apos;inverse
               </Label>
               <div className="overflow-x-auto">
                 <table className="w-full border-separate border-spacing-1 text-center text-xs">
@@ -267,16 +284,30 @@ export default function CustodyPage() {
                       <tr key={weekIndex}>
                         <td className="text-left text-slate-400">Semaine {weekIndex + 1}</td>
                         {week.map((day, dayIndex) => {
-                          const who = day === "a" ? parentA : parentB;
+                          const { amIsA, pmIsA } = dayAmPm(day);
+                          const amWho = amIsA ? parentA : parentB;
+                          const pmWho = pmIsA ? parentA : parentB;
+                          const isSplit = day === "a-b" || day === "b-a";
                           return (
                             <td key={dayIndex}>
                               <button
                                 type="button"
                                 onClick={() => toggleDay(weekIndex, dayIndex)}
-                                className="h-9 w-full min-w-9 rounded-md font-medium text-white"
-                                style={{ backgroundColor: who?.color ?? "#555" }}
+                                title={
+                                  isSplit
+                                    ? `Transfert : ${amWho?.display_name} le matin, ${pmWho?.display_name} le soir`
+                                    : amWho?.display_name
+                                }
+                                className="flex h-9 w-full min-w-9 overflow-hidden rounded-md font-medium text-white"
                               >
-                                {who?.display_name?.slice(0, 1) ?? "?"}
+                                <span className="flex flex-1 items-center justify-center" style={{ backgroundColor: amWho?.color ?? "#555" }}>
+                                  {amWho?.display_name?.slice(0, 1) ?? "?"}
+                                </span>
+                                {isSplit && (
+                                  <span className="flex flex-1 items-center justify-center" style={{ backgroundColor: pmWho?.color ?? "#555" }}>
+                                    {pmWho?.display_name?.slice(0, 1) ?? "?"}
+                                  </span>
+                                )}
                               </button>
                             </td>
                           );
@@ -286,6 +317,10 @@ export default function CustodyPage() {
                   </tbody>
                 </table>
               </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Une case divisée en deux (ex. {parentA?.display_name?.slice(0, 1) ?? "M"}/{parentB?.display_name?.slice(0, 1) ?? "P"}) indique une
+                journée de transfert : le premier parent a l&apos;enfant le matin, le second l&apos;après-midi/soir.
+              </p>
             </div>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { getMonthGrid, toISODate, WEEKDAY_LABELS } from "@/lib/dates";
-import { getCustodyParentId } from "@/lib/custody";
+import { getCustodyForDay } from "@/lib/custody";
 import type { CustodyOverride, CustodyPattern, FamilyEvent, Profile } from "@/types/database";
 import { DayCell } from "./DayCell";
 
@@ -26,7 +26,7 @@ export function MonthGrid({
   const profileMap = new Map(profiles.map((p) => [p.id, p]));
 
   const custodyByDay = days.map((day) =>
-    showCustody ? getCustodyParentId(day, custodyPattern, custodyOverrides) : null
+    showCustody ? getCustodyForDay(day, custodyPattern, custodyOverrides) : { am: null, pm: null }
   );
 
   return (
@@ -46,15 +46,17 @@ export function MonthGrid({
             const endISO = e.end_at.slice(0, 10);
             return startISO <= dayISO && endISO >= dayISO;
           });
-          const custodyParentId = custodyByDay[idx];
-          const prevCustodyParentId = idx > 0 ? custodyByDay[idx - 1] : null;
+          const custody = custodyByDay[idx];
+          const prev = idx > 0 ? custodyByDay[idx - 1] : null;
+          const sameAsPrev = prev !== null && custody.am === prev.am && custody.pm === prev.pm;
           return (
             <DayCell
               key={dayISO}
               date={day}
               monthDate={monthDate}
-              custodyParent={custodyParentId ? profileMap.get(custodyParentId) ?? null : null}
-              showCustodyLabel={custodyParentId !== prevCustodyParentId}
+              custodyAm={custody.am ? profileMap.get(custody.am) ?? null : null}
+              custodyPm={custody.pm ? profileMap.get(custody.pm) ?? null : null}
+              showCustodyLabel={!sameAsPrev}
               events={dayEvents}
               onSelectDay={onSelectDay}
               onSelectEvent={onSelectEvent}
