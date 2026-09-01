@@ -24,7 +24,8 @@ export function DayCell({
   isInDragRange: boolean;
   onSelectDay: (date: Date) => void;
   onSelectEvent: (event: FamilyEvent) => void;
-  onCellMouseDown: (date: Date) => void;
+  /** fromBand: true when the gesture started on the custody band (a plain click there toggles custody instead of opening the day panel). */
+  onCellMouseDown: (date: Date, clientX: number, clientY: number, fromBand: boolean) => void;
   onCellMouseEnter: (date: Date) => void;
 }) {
   const inMonth = isInMonth(date, monthDate);
@@ -33,30 +34,39 @@ export function DayCell({
 
   return (
     <div
-      onMouseDown={() => onCellMouseDown(date)}
+      onMouseDown={(e) => onCellMouseDown(date, e.clientX, e.clientY, false)}
       onMouseEnter={() => onCellMouseEnter(date)}
       className={`flex min-h-28 select-none flex-col border-b border-r border-white/5 ${
         inMonth ? "bg-transparent" : "bg-black/20"
       } ${isInDragRange ? "bg-indigo-500/20 ring-1 ring-inset ring-indigo-400" : ""}`}
     >
-      {isSplit ? (
-        <div className="flex text-[11px] font-semibold text-white">
-          <div className="flex-1 truncate px-1.5 py-1" style={{ backgroundColor: custodyAm!.color }}>
-            {showCustodyLabel ? custodyAm!.display_name.slice(0, 1) : " "}
-          </div>
-          <div className="flex-1 truncate px-1.5 py-1 text-right" style={{ backgroundColor: custodyPm!.color }}>
-            {showCustodyLabel ? custodyPm!.display_name.slice(0, 1) : " "}
-          </div>
+      {(custodyAm || custodyPm) && (
+        <div
+          title="Cliquer pour changer la garde ce jour-là, ou glisser pour créer un événement"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onCellMouseDown(date, e.clientX, e.clientY, true);
+          }}
+          className="flex w-full text-[11px] font-semibold text-white"
+        >
+          {isSplit ? (
+            <>
+              <span className="flex-1 truncate px-1.5 py-1 text-left" style={{ backgroundColor: custodyAm!.color }}>
+                {showCustodyLabel ? custodyAm!.display_name.slice(0, 1) : " "}
+              </span>
+              <span className="flex-1 truncate px-1.5 py-1 text-right" style={{ backgroundColor: custodyPm!.color }}>
+                {showCustodyLabel ? custodyPm!.display_name.slice(0, 1) : " "}
+              </span>
+            </>
+          ) : (
+            <span
+              className="flex-1 truncate px-2 py-1 text-left"
+              style={{ backgroundColor: (custodyAm ?? custodyPm)!.color }}
+            >
+              {showCustodyLabel ? (custodyAm ?? custodyPm)!.display_name : " "}
+            </span>
+          )}
         </div>
-      ) : (
-        (custodyAm || custodyPm) && (
-          <div
-            className="px-2 py-1 text-[11px] font-semibold text-white"
-            style={{ backgroundColor: (custodyAm ?? custodyPm)!.color }}
-          >
-            {showCustodyLabel ? (custodyAm ?? custodyPm)!.display_name : " "}
-          </div>
-        )
       )}
       <button
         onClick={() => onSelectDay(date)}

@@ -26,7 +26,7 @@ export function MonthGrid({
   dragRange: { start: string; end: string } | null;
   onSelectDay: (date: Date) => void;
   onSelectEvent: (event: FamilyEvent) => void;
-  onCellMouseDown: (date: Date) => void;
+  onCellMouseDown: (date: Date, clientX: number, clientY: number, fromBand: boolean) => void;
   onCellMouseEnter: (date: Date) => void;
 }) {
   const days = getMonthGrid(monthDate);

@@ -45,6 +45,8 @@ export default function CalendarPage() {
 
   const [dragAnchor, setDragAnchor] = useState<Date | null>(null);
   const [dragHover, setDragHover] = useState<Date | null>(null);
+  const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [dragFromBand, setDragFromBand] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const gridStart = startOfWeek(startOfMonth(monthDate), { weekStartsOn: 0 });
@@ -106,37 +108,76 @@ export default function CalendarPage() {
     setEventModalOpen(true);
   }
 
-  function handleCellMouseDown(date: Date) {
+  function handleCellMouseDown(date: Date, clientX: number, clientY: number, fromBand: boolean) {
     setDragAnchor(date);
     setDragHover(date);
-    setIsDragging(true);
+    setDragStartPos({ x: clientX, y: clientY });
+    setDragFromBand(fromBand);
+    // isDragging stays false until the mouse actually moves past a small threshold —
+    // this keeps a plain click (with the tiny, unavoidable mouse drift real clicks have)
+    // from being misread as a drag and opening the event form instead of the day panel.
   }
 
   function handleCellMouseEnter(date: Date) {
     if (isDragging) setDragHover(date);
   }
 
+  // Promotes a pending mousedown into an actual drag once the cursor has moved enough
+  // to be a deliberate gesture rather than click jitter.
   useEffect(() => {
-    if (!isDragging) return;
+    if (!dragAnchor || isDragging) return;
+    function handleMouseMove(e: MouseEvent) {
+      if (!dragStartPos) return;
+      const dx = e.clientX - dragStartPos.x;
+      const dy = e.clientY - dragStartPos.y;
+      if (Math.hypot(dx, dy) > 6) setIsDragging(true);
+    }
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [dragAnchor, dragStartPos, isDragging]);
+
+  async function handleBandClick(date: Date) {
+    if (!profile || profiles.length < 2) return;
+    const custody = getCustodyForDay(date, custodyPattern, custodyOverrides);
+    const current = custody.am ?? custody.pm;
+    const nextParent = profiles.find((p) => p.id !== current) ?? profiles[0];
+    await upsertCustodyOverride({
+      date: toISODate(date),
+      parent_id: nextParent.id,
+      pm_parent_id: null,
+      note: null,
+      created_by: profile.id,
+    });
+    await load();
+  }
+
+  useEffect(() => {
+    if (!dragAnchor) return;
     function handleMouseUp() {
       const anchor = dragAnchor;
       const hover = dragHover ?? anchor;
+      const wasDragging = isDragging;
+      const startedOnBand = dragFromBand;
       setIsDragging(false);
       setDragAnchor(null);
       setDragHover(null);
-      if (!anchor || !hover) return;
-      if (isSameDay(anchor, hover)) {
-        openDay(anchor);
-      } else {
+      setDragStartPos(null);
+      setDragFromBand(false);
+      if (!anchor) return;
+      if (wasDragging && hover && !isSameDay(anchor, hover)) {
         const start = anchor < hover ? anchor : hover;
         const end = anchor < hover ? hover : anchor;
         openNewEvent(start, end);
+      } else if (startedOnBand) {
+        handleBandClick(anchor);
+      } else {
+        openDay(anchor);
       }
     }
     window.addEventListener("mouseup", handleMouseUp);
     return () => window.removeEventListener("mouseup", handleMouseUp);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDragging, dragAnchor, dragHover]);
+  }, [dragAnchor, dragHover, isDragging, dragFromBand]);
 
   const dragRange = useMemo(() => {
     if (!isDragging || !dragAnchor || !dragHover) return null;
@@ -203,7 +244,8 @@ export default function CalendarPage() {
           </Button>
         </div>
         <p className="mb-2 text-xs text-slate-500">
-          Astuce : clique-glisse sur plusieurs jours pour créer un événement qui s&apos;étend sur toute la période.
+          Astuce : clique sur la bande de garde en haut d&apos;un jour pour changer le parent, ou clique-glisse
+          sur plusieurs jours pour créer un événement qui s&apos;étend sur toute la période.
         </p>
 
         {loading ? (
